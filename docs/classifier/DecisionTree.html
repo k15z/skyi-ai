@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>DecisionTree.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="..\docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>DecisionTree.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>This class implements a randomized decision tree. It randomly selects features 
+and values to split on - it repeats this process a few times, finding the pair
+with the lowest Gini impurity before moving to the left/right nodes. It is not
+meant to be used independently; for most applications, the RandomForest class 
+will provide significantly better results.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DecisionTree</span></span>
+
+    constructor: <span class="hljs-function"><span class="hljs-params">(depth = <span class="hljs-number">5</span>, num_tries=<span class="hljs-number">10</span>)</span>-&gt;</span>
+        @tree = {}
+        @depth = depth
+        @num_tries = num_tries</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Save to JSON string.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    save: <span class="hljs-function">-&gt;</span>
+        <span class="hljs-keyword">return</span> JSON.stringify(@tree)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Load from JSON string.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    load: <span class="hljs-function"><span class="hljs-params">(str)</span> -&gt;</span>
+        @tree = JSON.parse(str)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Fit this decision tree to the given training data.</p>
+<ul>
+<li><code>x</code> should be a 2d array of size num_samples * num_features</li>
+<li><code>y</code> should an array of size num_samples.</li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    fit: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
+        @_buildTree(x, y, @tree, @depth)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Return an array of objects representing the probability distribution.</p>
+<ul>
+<li><code>x</code> should be a 2d array of size num_samples * num_features</li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    predict: <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span>
+        y = []
+        <span class="hljs-keyword">for</span> x_i <span class="hljs-keyword">in</span> x
+            y.push(@predictOne(x_i))
+        <span class="hljs-keyword">return</span> y</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Return an object representing the probability distribution over labels.</p>
+<ul>
+<li><code>x_i</code> should be an array of size num_features</li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    predictOne: <span class="hljs-function"><span class="hljs-params">(x_i)</span> -&gt;</span>
+        base = @tree
+        <span class="hljs-keyword">while</span> <span class="hljs-keyword">not</span> base.terminal
+            <span class="hljs-keyword">if</span> x_i[base.index] &lt; base.split
+                base = base.left
+            <span class="hljs-keyword">else</span>
+                base = base.right
+        <span class="hljs-keyword">return</span> base.y</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Recursive function - fit the <code>base</code> node to <code>x</code> and <code>y</code> and recursively 
+fit the left and right nodes until <code>depth</code> reaches <code>0</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _buildTree: <span class="hljs-function"><span class="hljs-params">(x, y, base, depth)</span> -&gt;</span>
+        lowest_impurity = <span class="hljs-number">10000</span>
+        best_feature_index = <span class="hljs-number">0</span>
+        best_feature_split = <span class="hljs-number">0</span>
+
+        num_samples = x.length
+        num_features = x[<span class="hljs-number">0</span>].length
+        <span class="hljs-keyword">for</span> epoch <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@num_tries]
+            feature_index = @_randInt(num_features)
+            feature_split = @_randSplit(x[@_randInt(num_samples)][feature_index], x[@_randInt(num_samples)][feature_index])
+            less_than_x = []
+            less_than_y = []
+            greater_than_x = []
+            greater_than_y = []
+            <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..num_samples]
+                <span class="hljs-keyword">if</span> x[i][feature_index] &lt; feature_split
+                    less_than_x.push(x[i])
+                    less_than_y.push(y[i])
+                <span class="hljs-keyword">else</span>
+                    greater_than_x.push(x[i])
+                    greater_than_y.push(y[i])
+            impurity = @_impurity(less_than_y) + @_impurity(greater_than_y)
+            <span class="hljs-keyword">if</span> impurity &lt; lowest_impurity
+                lowest_impurity = impurity
+                best_feature_index = feature_index
+                best_feature_split = feature_split
+
+        base.impurity = lowest_impurity
+        base.index = best_feature_index
+        base.split = best_feature_split
+        <span class="hljs-keyword">if</span> depth &gt; <span class="hljs-number">0</span>
+            <span class="hljs-keyword">if</span> less_than_y.length &gt; <span class="hljs-number">0</span>
+                base.left = {}
+                @_buildTree(less_than_x, less_than_y, base.left, depth<span class="hljs-number">-1</span>)
+            <span class="hljs-keyword">else</span>
+                base.left = {}
+                base.left.terminal = <span class="hljs-literal">true</span>
+                base.left.y = @_counter(less_than_y)[<span class="hljs-number">0</span>]
+            <span class="hljs-keyword">if</span> greater_than_y.length &gt; <span class="hljs-number">0</span>
+                base.right = {}
+                @_buildTree(greater_than_x, greater_than_y, base.right, depth<span class="hljs-number">-1</span>)
+            <span class="hljs-keyword">else</span>
+                base.right = {}
+                base.right.terminal = <span class="hljs-literal">true</span>
+                base.right.y = @_counter(greater_than_y)[<span class="hljs-number">0</span>]
+        <span class="hljs-keyword">else</span>
+            [obj, total] = @_counter(y)
+            base.terminal = <span class="hljs-literal">true</span>
+            base.y = obj</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Return random integer in range [0, max)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _randInt: <span class="hljs-function"><span class="hljs-params">(max)</span> -&gt;</span>
+        <span class="hljs-keyword">return</span> parseInt(Math.random() * max)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Return random value in range (a, b]</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _randSplit: <span class="hljs-function"><span class="hljs-params">(a, b)</span> -&gt;</span>
+        p = Math.random()
+        <span class="hljs-keyword">return</span> a * p + b * (<span class="hljs-number">1</span> - p)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Compute Gini impurity (1 - sum(p_i^2)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _impurity: <span class="hljs-function"><span class="hljs-params">(y)</span> -&gt;</span>
+        [obj, total] = @_counter(y)
+        impurity = <span class="hljs-number">1.0</span>
+        <span class="hljs-keyword">for</span> key, value <span class="hljs-keyword">of</span> obj
+            impurity -= (value / total) * (value / total)
+        <span class="hljs-keyword">return</span> impurity</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Count the number of occurences of each discrete alue in <code>y</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _counter: <span class="hljs-function"><span class="hljs-params">(y)</span> -&gt;</span>
+        obj = {}
+        total = <span class="hljs-number">0</span>
+        <span class="hljs-keyword">for</span> label <span class="hljs-keyword">in</span> y
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> obj[label]
+                obj[label] = <span class="hljs-number">0</span>
+            obj[label] += <span class="hljs-number">1</span>
+            total += <span class="hljs-number">1</span>
+        <span class="hljs-keyword">return</span> [obj, total]
+
+<span class="hljs-built_in">module</span>.exports = DecisionTree</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
