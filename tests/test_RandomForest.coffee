@@ -3,7 +3,9 @@ assert = require("assert")
 describe("RandomForest", ->
     skyi = {}
     skyi.ai = require("../src")
-    model = new skyi.ai.classifier.RandomForest()
+    model = new skyi.ai.RandomForest({
+        num_trees: 1024
+    })
 
     fit = ->
         model.fit([
@@ -39,22 +41,22 @@ describe("RandomForest", ->
         assert.ok(c > a, "Should predict c, got a.")
         assert.ok(c > b, "Should predict c, got b.")
 
-    predictOne = ->
-        result = model.predictOne([1,1,1])
+    predict_one = ->
+        result = model.predict_one([1,1,1])
         a = result['a'] || 0
         b = result['b'] || 0
         c = result['c'] || 0
         assert.ok(a > b, "Should predict a, got b.")
         assert.ok(a > c, "Should predict a, got c.")
 
-        result = model.predictOne([1,0,1])
+        result = model.predict_one([1,0,1])
         a = result['a'] || 0
         b = result['b'] || 0
         c = result['c'] || 0
         assert.ok(b > a, "Should predict b, got a.")
         assert.ok(b > c, "Should predict b, got c.")
 
-        result = model.predictOne([1,0,0])
+        result = model.predict_one([1,0,0])
         a = result['a'] || 0
         b = result['b'] || 0
         c = result['c'] || 0
@@ -63,13 +65,13 @@ describe("RandomForest", ->
 
     saveLoad = ->
         str = model.save()
-        model = new skyi.ai.classifier.RandomForest()
+        model = new skyi.ai.RandomForest()
         model.load(str)
 
     it("fit", fit)
     it("predict", predict)
-    it("predictOne", predictOne)
+    it("predict_one", predict_one)
     it("save/load", saveLoad)
     it("save/load predict", predict)
-    it("save/load predictOne", predictOne)
+    it("save/load predict_one", predict_one)
 )

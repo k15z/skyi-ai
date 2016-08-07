@@ -5,11 +5,8 @@
 
 ai = module.exports
 
-# ## Classifiers
-ai.classifier = {}
+# [ai.DecisionTree](forestry/DecisionTree.html)
+ai.DecisionTree = require('./forestry/DecisionTree')
 
-# [ai.classifier.DecisionTree](classifier/DecisionTree.html)
-ai.classifier.DecisionTree = require('./classifier/DecisionTree')
-
-# [ai.classifier.RandomForest](classifier/RandomForest.html)
-ai.classifier.RandomForest = require('./classifier/RandomForest')
+# [ai.RandomForest](forestry/RandomForest.html)
+ai.RandomForest = require('./forestry/RandomForest')
