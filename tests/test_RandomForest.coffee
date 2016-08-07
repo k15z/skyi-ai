@@ -3,7 +3,7 @@ assert = require("assert")
 describe("RandomForest", ->
     skyi = {}
     skyi.ai = require("../src")
-    model = new skyi.ai.RandomForest({
+    model = new skyi.ai.ml.RandomForest({
         num_trees: 1024
     })
 
@@ -65,7 +65,7 @@ describe("RandomForest", ->
 
     saveLoad = ->
         str = model.save()
-        model = new skyi.ai.RandomForest()
+        model = new skyi.ai.ml.RandomForest()
         model.load(str)
 
     it("fit", fit)

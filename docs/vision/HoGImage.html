@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>HoGImage.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="..\docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>HoGImage.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HoGImage</span></span>
+    num_bins = <span class="hljs-number">16</span>
+
+    constructor: <span class="hljs-function"><span class="hljs-params">(image_data)</span> -&gt;</span>
+        @data = image_data.data
+        @width = image_data.width
+        @height = image_data.height
+
+        @luma = []
+        <span class="hljs-keyword">for</span> y <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@height]
+            row = []
+            <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@width]
+                r = @data[(y*@width+x)*<span class="hljs-number">4</span>+<span class="hljs-number">0</span>]
+                g = @data[(y*@width+x)*<span class="hljs-number">4</span>+<span class="hljs-number">1</span>]
+                b = @data[(y*@width+x)*<span class="hljs-number">4</span>+<span class="hljs-number">2</span>]
+                row.push(r + g + b)
+            @luma.push(row)
+
+        @grad = []
+        <span class="hljs-keyword">for</span> y <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@height]
+            row = []
+            <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@width]
+                <span class="hljs-keyword">if</span> y == <span class="hljs-number">0</span> <span class="hljs-keyword">or</span> y == @height - <span class="hljs-number">1</span> 
+                    row.push(<span class="hljs-number">0</span>)
+                <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> x == <span class="hljs-number">0</span> <span class="hljs-keyword">or</span> x == @width - <span class="hljs-number">1</span> 
+                    row.push(<span class="hljs-number">0</span>)
+                <span class="hljs-keyword">else</span>
+                    dy = @luma[y<span class="hljs-number">-1</span>][x] - @luma[y+<span class="hljs-number">1</span>][x]
+                    dx = @luma[y][x+<span class="hljs-number">1</span>] - @luma[y][x<span class="hljs-number">-1</span>]
+                    angle = Math.atan2(dy, dx)
+                    row.push(angle)
+            @grad.push(row)
+
+    histogram: <span class="hljs-function"><span class="hljs-params">(box, rows=<span class="hljs-number">1</span>, cols=<span class="hljs-number">1</span>)</span> -&gt;</span>
+        vector = []
+        cell_w = Math.floor(box.w / cols)
+        cell_h = Math.floor(box.y / rows)
+        <span class="hljs-keyword">for</span> y <span class="hljs-keyword">in</span> [box.y...box.y+box.h] <span class="hljs-keyword">by</span> cell_h
+            <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [box.x...box.x+box.w] <span class="hljs-keyword">by</span> cell_w
+                vector = vector.concat(@_histogram({
+                    x: x, y: y, w: cell_w, h: cell_h
+                }))
+        <span class="hljs-keyword">return</span> vector
+
+    _histogram: <span class="hljs-function"><span class="hljs-params">(box)</span> -&gt;</span>
+        bins = (<span class="hljs-number">0</span> <span class="hljs-keyword">for</span> [<span class="hljs-number">0.</span>..num_bins])
+        <span class="hljs-keyword">for</span> y <span class="hljs-keyword">in</span> [box.y...box.y+box.h]
+            <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [box.x...box.x+box.w]
+                angle = (@grad[y][x] + Math.PI) / (<span class="hljs-number">2</span> * Math.PI)
+                bin[Math.floor(angle * num_bins)]++
+        total = bins.reduce(<span class="hljs-function"><span class="hljs-params">(t, s)</span> -&gt;</span> t + s)
+        bins = (i / total <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> bins)
+        <span class="hljs-keyword">return</span> bins
+
+<span class="hljs-built_in">module</span>.exports = HoGImage</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

@@ -1,12 +1,17 @@
 # # skyi.ai.*
-# This module implements a variety of common machine learning algorithms from decision 
-# trees to support vector machines. It is primarily designed for classification tasks
-# but it does include some basic support for regression problems.
+# This module contains my implementations of a variety of common machine learning, 
+# artifical intelligence, and computer vision algorithms. It includes all sorts of
+# cool things from decision trees and random forests to HoG descriptors.
 
 ai = module.exports
+ai.ml = {}
+ai.vision = {}
 
-# [ai.DecisionTree](forestry/DecisionTree.html)
-ai.DecisionTree = require('./forestry/DecisionTree')
+# [ai.ml.DecisionTree](ml/DecisionTree.html)
+ai.ml.DecisionTree = require('./ml/DecisionTree')
 
-# [ai.RandomForest](forestry/RandomForest.html)
-ai.RandomForest = require('./forestry/RandomForest')
+# [ai.ml.RandomForest](ml/RandomForest.html)
+ai.ml.RandomForest = require('./ml/RandomForest')
+
+# [ai.vision.HoGImage](vision/HoGImage.html)
+ai.vision.RandomForest = require('./ml/RandomForest')

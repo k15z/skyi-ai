@@ -3,7 +3,7 @@ assert = require("assert")
 describe("DecisionTree", ->
     skyi = {}
     skyi.ai = require("../src")
-    model = new skyi.ai.DecisionTree({
+    model = new skyi.ai.ml.DecisionTree({
         max_depth: 64
         num_tries: 128
     })
@@ -23,9 +23,6 @@ describe("DecisionTree", ->
             [1,0,1],
             [1,0,0]
         ])
-        console.log(result[0])
-        console.log(result[1])
-        console.log(result[2])
 
         a = result[0]['a'] || 0
         b = result[0]['b'] || 0
@@ -69,7 +66,7 @@ describe("DecisionTree", ->
 
     saveLoad = ->
         str = model.save()
-        model = new skyi.ai.DecisionTree()
+        model = new skyi.ai.ml.DecisionTree()
         model.load(str)
 
     it("fit", fit)
