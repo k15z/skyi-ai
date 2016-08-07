@@ -22,14 +22,16 @@
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
               <h1 id="skyi-ai-">skyi.ai.*</h1>
-<p>This module implements a variety of common machine learning algorithms from decision 
-trees to support vector machines. It is primarily designed for classification tasks
-but it does include some basic support for regression problems.</p>
+<p>This module contains my implementations of a variety of common machine learning, 
+artifical intelligence, and computer vision algorithms. It includes all sorts of
+cool things from decision trees and random forests to HoG descriptors.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-ai = <span class="hljs-built_in">module</span>.exports</pre></div></div>
+ai = <span class="hljs-built_in">module</span>.exports
+ai.ml = {}
+ai.vision = {}</pre></div></div>
             
         </li>
         
@@ -40,11 +42,11 @@ ai = <span class="hljs-built_in">module</span>.exports</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p><a href="forestry/DecisionTree.html">ai.DecisionTree</a></p>
+              <p><a href="ml/DecisionTree.html">ai.ml.DecisionTree</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>ai.DecisionTree = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./forestry/DecisionTree'</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>ai.ml.DecisionTree = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./ml/DecisionTree'</span>)</pre></div></div>
             
         </li>
         
@@ -55,11 +57,26 @@ ai = <span class="hljs-built_in">module</span>.exports</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p><a href="forestry/RandomForest.html">ai.RandomForest</a></p>
+              <p><a href="ml/RandomForest.html">ai.ml.RandomForest</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>ai.RandomForest = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./forestry/RandomForest'</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>ai.ml.RandomForest = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./ml/RandomForest'</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p><a href="vision/HoGImage.html">ai.vision.HoGImage</a></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>ai.vision.RandomForest = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./ml/RandomForest'</span>)</pre></div></div>
             
         </li>
         
