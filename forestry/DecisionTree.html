@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>DecisionTree.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="..\docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>DecisionTree.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DecisionTree</span></span>
+
+    constructor: <span class="hljs-function"><span class="hljs-params">(opts={})</span> -&gt;</span>
+        @_tree = {}
+        @_score = <span class="hljs-literal">false</span>
+        @_max_depth = <span class="hljs-keyword">if</span> opts.max_depth <span class="hljs-keyword">then</span> opts.max_depth <span class="hljs-keyword">else</span> <span class="hljs-number">32</span>
+        @_num_tries = <span class="hljs-keyword">if</span> opts.num_tries <span class="hljs-keyword">then</span> opts.num_tries <span class="hljs-keyword">else</span> <span class="hljs-number">16</span>
+
+    save: <span class="hljs-function">-&gt;</span>
+        <span class="hljs-keyword">return</span> @_tree
+
+    load: <span class="hljs-function"><span class="hljs-params">(tree)</span> -&gt;</span>
+        @_tree = tree
+
+    fit: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
+        @_build_node(x, y, @_tree, @_max_depth)
+        @_score = @score(x, y)
+
+    score: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
+        right = <span class="hljs-number">0</span>
+        total = <span class="hljs-number">0</span>
+        output = @predict(x)
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..output.length]
+            best_count = <span class="hljs-number">0</span>
+            best_label = <span class="hljs-literal">false</span>
+            <span class="hljs-keyword">for</span> label, count <span class="hljs-keyword">of</span> output[i]
+                <span class="hljs-keyword">if</span> count &gt; best_count
+                    best_count = count
+                    best_label = label
+            <span class="hljs-keyword">if</span> best_label+<span class="hljs-string">""</span> == y[i]+<span class="hljs-string">""</span>
+                right++
+            total++
+        <span class="hljs-keyword">return</span> right / total
+
+    predict: <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span>
+        y = []
+        <span class="hljs-keyword">for</span> x_i <span class="hljs-keyword">in</span> x
+            y.push(@predict_one(x_i))
+        <span class="hljs-keyword">return</span> y
+
+    predict_one: <span class="hljs-function"><span class="hljs-params">(x_i)</span> -&gt;</span>
+        base = @_tree
+        <span class="hljs-keyword">while</span> base <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> base.leaf
+            <span class="hljs-keyword">if</span> x_i[base.index] &lt; base.split
+                base = base.left
+            <span class="hljs-keyword">else</span>
+                base = base.right
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> base
+            <span class="hljs-keyword">return</span> {}
+        <span class="hljs-keyword">return</span> base.distribution
+
+    _build_node: <span class="hljs-function"><span class="hljs-params">(x, y, node, depth)</span> -&gt;</span>
+        [obj, total] = @_count(y)
+        <span class="hljs-keyword">if</span> depth == <span class="hljs-number">0</span> <span class="hljs-keyword">or</span> Object.keys(obj).length &lt;= <span class="hljs-number">1</span>
+            node.leaf = <span class="hljs-literal">true</span>
+            node.total = total
+            node.distribution = obj
+        <span class="hljs-keyword">else</span>
+            best = @_select_split(x, y)
+            node.index = best.index
+            node.split = best.split
+            node.left = {}
+            @_build_node(best.left_x, best.left_y, node.left, depth<span class="hljs-number">-1</span>)
+            node.right = {}
+            @_build_node(best.right_x, best.right_y, node.right, depth<span class="hljs-number">-1</span>)
+
+    _select_split: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
+        num_samples = x.length
+        num_features = x[<span class="hljs-number">0</span>].length
+        best = {
+            impurity: Number.MAX_SAFE_INTEGER
+            index: <span class="hljs-number">-1</span>
+            split: <span class="hljs-number">-1</span>
+            left_x: []
+            left_y: []
+            right_x: []
+            right_y: []
+        }
+        <span class="hljs-keyword">for</span> trie <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@_num_tries]
+            current = {}
+            current.impurity = <span class="hljs-number">0</span>
+            current.index = @_rand_int(num_features)
+            current.split = @_rand_float(x[@_rand_int(num_samples)][current.index], x[@_rand_int(num_samples)][current.index])
+            current.left_x = []
+            current.left_y = []
+            current.right_x = []
+            current.right_y = []
+            <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..num_samples]
+                <span class="hljs-keyword">if</span> x[i][current.index] &lt; current.split
+                    current.left_x.push(x[i])
+                    current.left_y.push(y[i])
+                <span class="hljs-keyword">else</span>
+                    current.right_x.push(x[i])
+                    current.right_y.push(y[i])
+            current.impurity = @_impurity(current.left_y) + @_impurity(current.right_y)
+            <span class="hljs-keyword">if</span> current.impurity &lt; best.impurity
+                best = current
+        <span class="hljs-keyword">return</span> best
+
+    _rand_int: <span class="hljs-function"><span class="hljs-params">(max)</span> -&gt;</span>
+        value = Math.random() * max
+        <span class="hljs-keyword">return</span> Math.floor(value)
+
+    _rand_float: <span class="hljs-function"><span class="hljs-params">(a, b)</span> -&gt;</span>
+        p = Math.random()
+        <span class="hljs-keyword">return</span> a * p + b * (<span class="hljs-number">1</span> - p)
+
+    _count: <span class="hljs-function"><span class="hljs-params">(y)</span> -&gt;</span>
+        obj = {}
+        total = <span class="hljs-number">0</span>
+        <span class="hljs-keyword">for</span> label <span class="hljs-keyword">in</span> y
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> obj[label]
+                obj[label] = <span class="hljs-number">0</span>
+            obj[label] += <span class="hljs-number">1</span>
+            total += <span class="hljs-number">1</span>
+        <span class="hljs-keyword">return</span> [obj, total]
+
+    _impurity: <span class="hljs-function"><span class="hljs-params">(y)</span> -&gt;</span>
+        impurity = <span class="hljs-number">1.0</span>
+        [obj, total] = @_count(y)
+        <span class="hljs-keyword">for</span> key, value <span class="hljs-keyword">of</span> obj
+            impurity -= (value / total) * (value / total)
+        <span class="hljs-keyword">return</span> impurity
+
+<span class="hljs-built_in">module</span>.exports = DecisionTree</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

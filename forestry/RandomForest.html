@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>RandomForest.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="..\docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>RandomForest.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>DecisionTree = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./DecisionTree'</span>)
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RandomForest</span></span>
+
+    constructor: <span class="hljs-function"><span class="hljs-params">(opts={})</span> -&gt;</span>
+        @_trees = []
+        @_opts = opts
+        @_verbose = <span class="hljs-keyword">if</span> opts.verbose <span class="hljs-keyword">then</span> opts.verbose <span class="hljs-keyword">else</span> <span class="hljs-literal">false</span>
+        @_num_trees = <span class="hljs-keyword">if</span> opts.num_trees <span class="hljs-keyword">then</span> opts.num_trees <span class="hljs-keyword">else</span> <span class="hljs-number">8</span>
+        @_num_folds = <span class="hljs-keyword">if</span> opts.num_folds <span class="hljs-keyword">then</span> opts.num_folds <span class="hljs-keyword">else</span> <span class="hljs-number">1</span>
+        @_redundancy = <span class="hljs-keyword">if</span> opts.redundancy <span class="hljs-keyword">then</span> opts.redundancy <span class="hljs-keyword">else</span> <span class="hljs-number">1</span>
+
+    save: <span class="hljs-function">-&gt;</span>
+        trees = []
+        <span class="hljs-keyword">for</span> tree <span class="hljs-keyword">in</span> @_trees
+            trees.push(tree.save())
+        <span class="hljs-keyword">return</span> trees
+
+    load: <span class="hljs-function"><span class="hljs-params">(trees)</span> -&gt;</span>
+        _trees = []
+        <span class="hljs-keyword">for</span> tree <span class="hljs-keyword">in</span> trees
+            _tree = <span class="hljs-keyword">new</span> DecisionTree()
+            _tree.load(tree)
+            _trees.push(_tree)
+        @_trees = _trees
+
+    fit: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@_num_trees * @_redundancy]
+            <span class="hljs-keyword">if</span> @_verbose
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"building tree <span class="hljs-subst">#{i}</span>..."</span>)
+            sub_x = []
+            sub_y = []
+            tree = <span class="hljs-keyword">new</span> DecisionTree(@_opts)
+            num_subset = Math.floor(x.length / @_num_folds)
+            <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..num_subset]
+                j = parseInt(Math.random()*x.length)
+                sub_x.push(x[j])
+                sub_y.push(y[j])
+            tree.fit(sub_x, sub_y)
+            @_trees.push(tree)
+        @_trees.sort(<span class="hljs-function"><span class="hljs-params">(a, b)</span> -&gt;</span> b._score - a._score)
+        @_trees.splice(@_num_trees)
+
+    score: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
+        right = <span class="hljs-number">0</span>
+        total = <span class="hljs-number">0</span>
+        output = @predict(x)
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..output.length]
+            best_score = <span class="hljs-number">0</span>
+            best_label = <span class="hljs-literal">false</span>
+            <span class="hljs-keyword">for</span> label, score <span class="hljs-keyword">of</span> output[i]
+                <span class="hljs-keyword">if</span> score &gt; best_score
+                    best_score = score
+                    best_label = label
+            <span class="hljs-keyword">if</span> best_label == y[i]
+                right++
+            total++
+        <span class="hljs-keyword">return</span> right / total
+
+    predict: <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span>
+        y = []
+        <span class="hljs-keyword">for</span> x_i <span class="hljs-keyword">in</span> x
+            y.push(@predict_one(x_i))
+        <span class="hljs-keyword">return</span> y
+
+    predict_one: <span class="hljs-function"><span class="hljs-params">(x_i)</span> -&gt;</span>
+        y_i = []
+        <span class="hljs-keyword">for</span> tree <span class="hljs-keyword">in</span> @_trees
+            y_i.push(tree.predict_one(x_i))
+        <span class="hljs-keyword">return</span> @_collate(y_i)
+
+    _collate: <span class="hljs-function"><span class="hljs-params">(arr)</span> -&gt;</span>
+        acc = {}
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..arr.length]
+            <span class="hljs-keyword">for</span> key, value <span class="hljs-keyword">of</span> arr[i]
+                <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> acc[key]
+                    acc[key] = <span class="hljs-number">0</span>
+                acc[key] += value
+        <span class="hljs-keyword">return</span> acc
+
+<span class="hljs-built_in">module</span>.exports = RandomForest</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
