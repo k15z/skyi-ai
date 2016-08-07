@@ -67,7 +67,7 @@
     histogram: <span class="hljs-function"><span class="hljs-params">(box, rows=<span class="hljs-number">1</span>, cols=<span class="hljs-number">1</span>)</span> -&gt;</span>
         vector = []
         cell_w = Math.floor(box.w / cols)
-        cell_h = Math.floor(box.y / rows)
+        cell_h = Math.floor(box.h / rows)
         <span class="hljs-keyword">for</span> y <span class="hljs-keyword">in</span> [box.y...box.y+box.h] <span class="hljs-keyword">by</span> cell_h
             <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [box.x...box.x+box.w] <span class="hljs-keyword">by</span> cell_w
                 vector = vector.concat(@_histogram({
@@ -79,8 +79,8 @@
         bins = (<span class="hljs-number">0</span> <span class="hljs-keyword">for</span> [<span class="hljs-number">0.</span>..num_bins])
         <span class="hljs-keyword">for</span> y <span class="hljs-keyword">in</span> [box.y...box.y+box.h]
             <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [box.x...box.x+box.w]
-                angle = (@grad[y][x] + Math.PI) / (<span class="hljs-number">2</span> * Math.PI)
-                bin[Math.floor(angle * num_bins)]++
+                angle = (@grad[y][x] + Math.PI - <span class="hljs-number">1e-10</span>) / (<span class="hljs-number">2</span> * Math.PI)
+                bins[Math.floor(angle * num_bins)]++;
         total = bins.reduce(<span class="hljs-function"><span class="hljs-params">(t, s)</span> -&gt;</span> t + s)
         bins = (i / total <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> bins)
         <span class="hljs-keyword">return</span> bins

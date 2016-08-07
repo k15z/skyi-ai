@@ -13,5 +13,8 @@ ai.ml.DecisionTree = require('./ml/DecisionTree')
 # [ai.ml.RandomForest](ml/RandomForest.html)
 ai.ml.RandomForest = require('./ml/RandomForest')
 
+# [ai.ml.LinearSVM](ml/LinearSVM.html)
+ai.ml.LinearSVM = require('./ml/LinearSVM')
+
 # [ai.vision.HoGImage](vision/HoGImage.html)
 ai.vision.RandomForest = require('./ml/RandomForest')
