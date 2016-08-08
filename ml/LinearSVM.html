@@ -13,12 +13,6 @@
     
     <ul class="sections">
         
-          <li id="title">
-              <div class="annotation">
-                  <h1>LinearSVM.coffee</h1>
-              </div>
-          </li>
-        
         
         
         <li id="section-1">
@@ -27,28 +21,92 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              
+              <h1 id="linearsvm-coffee">LinearSVM.coffee</h1>
+<p>This is a ridiculously lightweight linear support vector machine implementation. It uses gradient
+descent to find a hyperplane (binary classification only) between the +1 and -1 samples. It may 
+or may not converge on the optimal hyperplane - depending on performance, may be reimplemented as
+a kernel support vector machine.</p>
+
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LinearSVM</span></span>
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LinearSVM</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <ul>
+<li><code>opts.lr_rate</code> is the learning rate (default: 0.01)</li>
+<li><code>opts.epochs</code> is the number of training cycles (default: 1000)</li>
+<li><code>opts.verbose</code> is whether to print each cycle (default: true)</li>
+</ul>
 
-    constructor: <span class="hljs-function"><span class="hljs-params">(opts={})</span> -&gt;</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    constructor: <span class="hljs-function"><span class="hljs-params">(opts={})</span> -&gt;</span>
         @l_rate = <span class="hljs-keyword">if</span> opts.l_rate? <span class="hljs-keyword">then</span> opts.l_rate <span class="hljs-keyword">else</span> <span class="hljs-number">0.01</span>
         @epochs = <span class="hljs-keyword">if</span> opts.epochs? <span class="hljs-keyword">then</span> opts.epochs <span class="hljs-keyword">else</span> <span class="hljs-number">1000</span>
-        @verbose = <span class="hljs-keyword">if</span> opts.verbose? <span class="hljs-keyword">then</span> opts.verbose <span class="hljs-keyword">else</span> <span class="hljs-literal">true</span>
+        @verbose = <span class="hljs-keyword">if</span> opts.verbose? <span class="hljs-keyword">then</span> opts.verbose <span class="hljs-keyword">else</span> <span class="hljs-literal">true</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Load the bias and weight terms. Options not included.</p>
 
-
-    load: <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    load: <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span>
         @bias = obj.bias
-        @weight = obj.weight
+        @weight = obj.weight</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Export the bias and weight terms. Options not included.</p>
 
-    save: <span class="hljs-function">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    save: <span class="hljs-function">-&gt;</span>
         <span class="hljs-keyword">return</span> {
             bias: @bias
             weight: @weight
-        }
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <ul>
+<li><code>x</code> is a 2d array of size <code>num_samples</code> by <code>num_features</code></li>
+<li><code>y</code> is an array of size <code>num_features</code> that only contains +/= 1 </li>
+</ul>
 
-    fit: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    fit: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
         num_samples = x.length
         num_features = x[<span class="hljs-number">0</span>].length
         <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> @bias <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> @weight
@@ -64,15 +122,45 @@
                         @bias += @l_rate * y[i]
             accuracy = <span class="hljs-number">1.0</span> - incorrect / num_samples
             <span class="hljs-keyword">if</span> @verbose
-                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"epoch <span class="hljs-subst">#{e}</span>: <span class="hljs-subst">#{accuracy}</span> acc"</span>)
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"epoch <span class="hljs-subst">#{e}</span>: <span class="hljs-subst">#{accuracy}</span> acc"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <ul>
+<li><code>x</code> is a 2d array of size <code>num_samples</code> by <code>num_features</code></li>
+</ul>
 
-    predict: <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    predict: <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span>
         y = []
         <span class="hljs-keyword">for</span> x_i <span class="hljs-keyword">in</span> x
             y.push(@predict_one(x_i))
-        <span class="hljs-keyword">return</span> y
+        <span class="hljs-keyword">return</span> y</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <ul>
+<li><code>x</code> is an array of size <code>num_features</code></li>
+</ul>
 
-    predict_one: <span class="hljs-function"><span class="hljs-params">(x_i)</span> -&gt;</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    predict_one: <span class="hljs-function"><span class="hljs-params">(x_i)</span> -&gt;</span>
         y_i = @bias
         <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@weight.length]
             y_i += @weight[j] * x_i[j]
