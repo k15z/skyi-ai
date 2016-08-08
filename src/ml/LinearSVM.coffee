@@ -1,23 +1,38 @@
 class LinearSVM
-    lr = 0.01
-    epoch = 100
 
-    constructor: (num_features) ->
-        @num_features = num_features
-        @b = 0.5 - Math.random()
-        @w = (0.5 - Math.random() for [0...@num_features])
+    constructor: (opts={}) ->
+        @l_rate = if opts.l_rate? then opts.l_rate else 0.01
+        @epochs = if opts.epochs? then opts.epochs else 1000
+        @verbose = if opts.verbose? then opts.verbose else true
+
+
+    load: (obj) ->
+        @bias = obj.bias
+        @weight = obj.weight
+
+    save: ->
+        return {
+            bias: @bias
+            weight: @weight
+        }
 
     fit: (x, y) ->
         num_samples = x.length
-        for e in [0...epoch]
-            has_mistake = false
+        num_features = x[0].length
+        if not @bias or not @weight
+            @bias = 0.5 - Math.random()
+            @weight = (0.5 - Math.random() for [0...num_features])
+        for e in [0...@epochs]
+            incorrect = 0
             for i in [0...num_samples]
                 if @predict_one(x[i]) * y[i] < 1
-                    has_mistake = true
-                    for j in [0...@num_features]
-                        @w[j] += lr * x[i][j] * y[i]
-            if not has_mistake
-                break
+                    incorrect++
+                    for j in [0...@weight.length]
+                        @weight[j] += @l_rate * x[i][j] * y[i]
+                        @bias += @l_rate * y[i]
+            accuracy = 1.0 - incorrect / num_samples
+            if @verbose
+                console.log("epoch #{e}: #{accuracy} acc")
 
     predict: (x) ->
         y = []
@@ -26,9 +41,9 @@ class LinearSVM
         return y
 
     predict_one: (x_i) ->
-        y_i = @b
-        for j in [0...@num_features]
-            y_i += @w[j] * x_i[j]
+        y_i = @bias
+        for j in [0...@weight.length]
+            y_i += @weight[j] * x_i[j]
         return y_i
 
 module.exports = LinearSVM

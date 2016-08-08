@@ -1,4 +1,4 @@
-
+# Histogram of oriented gradients
 class HoGImage
     num_bins = 16
 
@@ -36,8 +36,8 @@ class HoGImage
         vector = []
         cell_w = Math.floor(box.w / cols)
         cell_h = Math.floor(box.h / rows)
-        for y in [box.y...box.y+box.h] by cell_h
-            for x in [box.x...box.x+box.w] by cell_w
+        for y in [box.y...box.y+box.h-cell_h+1] by cell_h
+            for x in [box.x...box.x+box.w-cell_w+1] by cell_w
                 vector = vector.concat(@_histogram({
                     x: x, y: y, w: cell_w, h: cell_h
                 }))
@@ -48,7 +48,7 @@ class HoGImage
         for y in [box.y...box.y+box.h]
             for x in [box.x...box.x+box.w]
                 angle = (@grad[y][x] + Math.PI - 1e-10) / (2 * Math.PI)
-                bins[Math.floor(angle * num_bins)]++;
+                bins[Math.floor(angle * num_bins)]++
         total = bins.reduce((t, s) -> t + s)
         bins = (i / total for i in bins)
         return bins
