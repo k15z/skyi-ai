@@ -31,25 +31,40 @@
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LinearSVM</span></span>
-    lr = <span class="hljs-number">0.01</span>
-    epoch = <span class="hljs-number">100</span>
 
-    constructor: <span class="hljs-function"><span class="hljs-params">(num_features)</span> -&gt;</span>
-        @num_features = num_features
-        @b = <span class="hljs-number">0.5</span> - Math.random()
-        @w = (<span class="hljs-number">0.5</span> - Math.random() <span class="hljs-keyword">for</span> [<span class="hljs-number">0.</span>..@num_features])
+    constructor: <span class="hljs-function"><span class="hljs-params">(opts={})</span> -&gt;</span>
+        @l_rate = <span class="hljs-keyword">if</span> opts.l_rate? <span class="hljs-keyword">then</span> opts.l_rate <span class="hljs-keyword">else</span> <span class="hljs-number">0.01</span>
+        @epochs = <span class="hljs-keyword">if</span> opts.epochs? <span class="hljs-keyword">then</span> opts.epochs <span class="hljs-keyword">else</span> <span class="hljs-number">1000</span>
+        @verbose = <span class="hljs-keyword">if</span> opts.verbose? <span class="hljs-keyword">then</span> opts.verbose <span class="hljs-keyword">else</span> <span class="hljs-literal">true</span>
+
+
+    load: <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span>
+        @bias = obj.bias
+        @weight = obj.weight
+
+    save: <span class="hljs-function">-&gt;</span>
+        <span class="hljs-keyword">return</span> {
+            bias: @bias
+            weight: @weight
+        }
 
     fit: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
         num_samples = x.length
-        <span class="hljs-keyword">for</span> e <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..epoch]
-            has_mistake = <span class="hljs-literal">false</span>
+        num_features = x[<span class="hljs-number">0</span>].length
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> @bias <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> @weight
+            @bias = <span class="hljs-number">0.5</span> - Math.random()
+            @weight = (<span class="hljs-number">0.5</span> - Math.random() <span class="hljs-keyword">for</span> [<span class="hljs-number">0.</span>..num_features])
+        <span class="hljs-keyword">for</span> e <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@epochs]
+            incorrect = <span class="hljs-number">0</span>
             <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..num_samples]
                 <span class="hljs-keyword">if</span> @predict_one(x[i]) * y[i] &lt; <span class="hljs-number">1</span>
-                    has_mistake = <span class="hljs-literal">true</span>
-                    <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@num_features]
-                        @w[j] += lr * x[i][j] * y[i]
-            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> has_mistake
-                <span class="hljs-keyword">break</span>
+                    incorrect++
+                    <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@weight.length]
+                        @weight[j] += @l_rate * x[i][j] * y[i]
+                        @bias += @l_rate * y[i]
+            accuracy = <span class="hljs-number">1.0</span> - incorrect / num_samples
+            <span class="hljs-keyword">if</span> @verbose
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"epoch <span class="hljs-subst">#{e}</span>: <span class="hljs-subst">#{accuracy}</span> acc"</span>)
 
     predict: <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span>
         y = []
@@ -58,9 +73,9 @@
         <span class="hljs-keyword">return</span> y
 
     predict_one: <span class="hljs-function"><span class="hljs-params">(x_i)</span> -&gt;</span>
-        y_i = @b
-        <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@num_features]
-            y_i += @w[j] * x_i[j]
+        y_i = @bias
+        <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..@weight.length]
+            y_i += @weight[j] * x_i[j]
         <span class="hljs-keyword">return</span> y_i
 
 <span class="hljs-built_in">module</span>.exports = LinearSVM</pre></div></div>
